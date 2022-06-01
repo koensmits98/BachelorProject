@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 def hello():
     print("hello")
+    print("test")
 
 # opening root file
 f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/mc_345060.ggH125_ZZ4lep.4lep.root")
