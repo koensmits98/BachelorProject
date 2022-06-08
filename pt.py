@@ -2,6 +2,10 @@ import ROOT
 
 # Here we open the data that we want to analyse, which is in the form of a .root file. A .root file consists of a tree having branches and leaves.
 f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/mc_345060.ggH125_ZZ4lep.4lep.root")
+f1 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_A.4lep.root")
+f2 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_B.4lep.root")
+f3 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_C.4lep.root")
+f4 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_D.4lep.root")
 
 tree = f.Get("mini")
 number_entries = tree.GetEntries()
