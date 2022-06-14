@@ -96,8 +96,14 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
+higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
+"mc_363490.llll.4lep.root"]
 
+datastacked = ['datastacked.root']
 
+higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
+
+#this function plots every hist in the list and gives it an image with the same name
 def m4lplot(filelist):
     stackedhist = ROOT.TH1F('stackedhist',"plot m4l", 100, 0 , 400000)
     
@@ -107,7 +113,7 @@ def m4lplot(filelist):
         hist = f.Get('m4lhist')
         # if bestand == 'mc_363490.llll.4lep.root':
         #     hist.Scale(1.3)
-
+        print(hist.Integral())
         canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
 
 
@@ -118,9 +124,19 @@ def m4lplot(filelist):
         imagename = bestand.replace('.root','.jpg', 1)
         canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-stackedlist = ['datastacked.root']
-# higgslist = ['higgscut.root', 'higgsuncut.root']
-m4lplot(stackedlist)
+
+# m4lplot(stackedlist)
+
+
+
+def integral(filename):
+    f = ROOT.TFile.Open(filename)
+    hist = f.Get('m4lhist')
+    integral = hist.Integral()
+    print(integral)
+
+# integral('/user/ksmits/BachelorProject/m4lhists/higgsuncut.root')
+# integral('/user/ksmits/BachelorProject/m4lhists/higgscut.root')
 
 
 def layered(filelist, plotname):
@@ -128,6 +144,8 @@ def layered(filelist, plotname):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
     combinedhist = ROOT.THStack('datastacked',"plot m4l")
 
+    data = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/datastacked.root', 'read')
+    datahist = data.Get('m4lhist')
     datahist.Draw('E')
 
     i = 0
@@ -136,7 +154,7 @@ def layered(filelist, plotname):
         
         i += 1
 
-        f = ROOT.TFile.Open('/user/ksmits/analyse/mcrootfiles/{}'.format(bestand), "READ")
+        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
         hist = f.Get('m4lhist')
         hist.SetName(hist.GetName()+str(i))
 
@@ -157,58 +175,29 @@ def layered(filelist, plotname):
 
     canvas.Print(plotname)
 
-# layered(goodfiles, 'layered.jpg')
+# layered(higgsandZZ, 'higgsandzz.jpg')
 
-
-def combined(filelist, plotname):
-    
+def stack(filelist, imagename):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
 
-    combinedhist = ROOT.TH1F('datastacked',"plot m4l", 100, 0, 40000)
-    datahist.Draw('E')
-
+    i = 0
+    stack = {}
+    stack['0'] = ROOT.TH1F('emptyhist', "m4l", 100, 0 , 400000)
+    # print(stack['0'])
+    # a = stack['0'].Clone()
+    # print(a)
     for bestand in filelist:
-
-        f = ROOT.TFile.Open('/user/ksmits/analyse/mcrootfiles/{}'.format(bestand), "READ")
+        i +=1
+        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
         hist = f.Get('m4lhist')
+        print(hist)
+        stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
+        stack['{}'.format(i)].Add(hist)
 
-        if bestand == 'mc_363490.llll.4lep.root':
-            hist.Scale(1.3)
+    for i in range(i, 0, -1):
+        stack['{}'.format(i)].SetFillColor(i)
+        stack['{}'.format(i)].Draw('same hist')
+    canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-        # hist.SetLineColor(ROOT.kBlack) 
-        # hist.SetLineWidth(2) 
-        # hist.SetFillColor(i)
-        # hist.Print()
-
-        combinedhist.Add(hist)
-
-    combinedhist.Draw('same hist')
-    canvas.Print(plotname)
-
-# combined(goodfiles, 'combined.jpg')
-
-
-def integral(filename):
-    f = ROOT.TFile.Open(filename)
-    hist = f.Get('m4lhist')
-    integral = hist.Integral()
-    print(integral)
-
-# integral('/user/ksmits/BachelorProject/m4lhists/higgsuncut.root')
-# integral('/user/ksmits/BachelorProject/m4lhists/higgscut.root')
-
-
-def m4lstacked(filelist, filename):
-    stackedhist = ROOT.TH1F('datastacked',"plot m4l",100, 0, 400000)
-     
-    for bestand in filelist:
-
-        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), 'READ')
-        hist = f.Get('m4lhist')
-        stackedhist.Add(hist)
-    b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), 'recreate')
-    b.cd()
-    stackedhist.Write()
-
-# m4lstacked(datafilelist, 'datastacked.root')
+stack(higgsandZZ, 'higgsandZZ.jpg')
 
