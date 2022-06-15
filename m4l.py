@@ -3,6 +3,9 @@ import numpy as np
 
 lumi_data = 10
 
+higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
+"mc_363490.llll.4lep.root"]
+
 datafilelist = ["data_A.4lep.root",\
 "data_B.4lep.root" ,\
 "data_C.4lep.root",\
@@ -52,7 +55,7 @@ mclist = ['mc_341122.ggH125_tautaull.4lep.root' ,\
 
 
 
-def m4lhist(lijst, dataofmc, cut):
+def m4lhist(lijst, dataofmc, cut, scalefactor):
     for bestand in lijst:
         if dataofmc == 'data':
             f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
@@ -103,7 +106,10 @@ def m4lhist(lijst, dataofmc, cut):
             
             
             if dataofmc == 'mc':
-                finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
+                if scalefactor == True:
+                    finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
+                if scalefactor == False:
+                    finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights
                 hist.Fill(m4l, finalmcWeight)
             if dataofmc == 'data':
                 hist.Fill(m4l)
@@ -113,9 +119,11 @@ def m4lhist(lijst, dataofmc, cut):
         b.cd()
         hist.Write()
 
-higgslist = ['mc_345060.ggH125_ZZ4lep.4lep.root']
+higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
-# m4lhist(higgslist, 'mc', False, 'higgsuncut.root')
-# m4lhist(higgslist, 'mc', True, 'higgscut.root')
+# m4lhist(higgs, 'mc', False, 'higgsuncut.root')
+# m4lhist(higgs, 'mc', True, 'higgscut.root')
     
-m4lhist(datafilelist, 'data', False)
+# m4lhist(higgs, 'mc', True, True)
+
+m4lhist(datafilelist, 'data', True, True)

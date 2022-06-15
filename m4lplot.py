@@ -96,8 +96,8 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
-higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
-"mc_363490.llll.4lep.root"]
+ZZandHiggs = ["mc_363490.llll.4lep.root" ,\
+"mc_345060.ggH125_ZZ4lep.4lep.root"]
 
 datastacked = ['datastacked.root']
 
@@ -179,25 +179,35 @@ def layered(filelist, plotname):
 
 def stack(filelist, imagename):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
-
-    i = 0
     stack = {}
-    stack['0'] = ROOT.TH1F('emptyhist', "m4l", 100, 0 , 400000)
+
+    stack['0'] = ROOT.TH1F('abc', "m4l", 100, 0 , 400000)
+
+    # stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
+    # stack['1'].Draw('hist')
     # print(stack['0'])
     # a = stack['0'].Clone()
     # print(a)
+    i = 0
+    histlist = {}
     for bestand in filelist:
-        i +=1
+        i += 1
+        print(i)
         f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
         hist = f.Get('m4lhist')
-        print(hist)
+        
         stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
         stack['{}'.format(i)].Add(hist)
+        stack['{}'.format(i)].SetDirectory(0)
+
+
+        # print(stack['{}'.format(i)])
 
     for i in range(i, 0, -1):
         stack['{}'.format(i)].SetFillColor(i)
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-stack(higgsandZZ, 'higgsandZZ.jpg')
+# stack(goodfiles, 'goodfiles.jpg')
+stack(ZZandHiggs, 'ZZandHiggs.jpg')
 

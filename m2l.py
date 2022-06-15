@@ -6,18 +6,40 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
+datastacked = ['datastacked.root']
+
+ZZ = ['mc_363490.llll.4lep.root']
+
+higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
+
+higgsandZZ = ['mc_363490.llll.4lep.root',\
+'mc_345060.ggH125_ZZ4lep.4lep.root']
+
+higgsfiles = ['mc_341122.ggH125_tautaull.4lep.root' ,\
+'mc_341155.VBFH125_tautaull.4lep.root' ,\
+'mc_341947.ZH125_ZZ4lep.4lep.root' ,\
+'mc_341964.WH125_ZZ4lep.4lep.root' ,\
+'mc_344235.VBFH125_ZZ4lep.4lep.root' ,\
+'mc_345060.ggH125_ZZ4lep.4lep.root' ,\
+'mc_345323.VBFH125_WW2lep.4lep.root' ,\
+'mc_345324.ggH125_WW2lep.4lep.root' ,\
+'mc_345325.WpH125J_qqWW2lep.4lep.root' ,\
+'mc_345327.WpH125J_lvWW2lep.4lep.root' ,\
+'mc_345336.ZH125J_qqWW2lep.4lep.root' ,\
+'mc_345337.ZH125J_llWW2lep.4lep.root' ,\
+'mc_345445.ZH125J_vvWW2lep.4lep.root']
 
 lumi_data = 10
 
 
 
-def m2lpairs(filelist):
+def m2l(filelist):
     for bestand in filelist:
         f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand))
         tree = f.Get("mini")
         number_entries = tree.GetEntries()
 
-        hist = ROOT.TH1F('m2l Z boson', "dileptonmass; invmass; events", 1000, 0, 120000)
+        hist = ROOT.TH1F('m2l', "dileptonmass; invmass; events", 1000, 0, 120000)
         
         meerleptons = []
 
@@ -93,10 +115,7 @@ def m2lpairs(filelist):
         # histm4l.Write()
         # print(len(meerleptons))
 
+m2l(higgsfiles)
 
-lijst = ['mc_363490.llll.4lep.root']
-lijst2 = ['mc_345060.ggH125_ZZ4lep.4lep.root']
-
-m2lpairs(lijst)
 
 

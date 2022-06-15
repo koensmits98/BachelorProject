@@ -1,64 +1,85 @@
 import ROOT
 
+lumi_data = 10
+
 # Here we open the data that we want to analyse, which is in the form of a .root file. A .root file consists of a tree having branches and leaves.
-f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/mc_345060.ggH125_ZZ4lep.4lep.root")
-f1 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_A.4lep.root")
-f2 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_B.4lep.root")
-f3 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_C.4lep.root")
-f4 = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/data_D.4lep.root")
+# datafilelist = ["/data/atlas/users/mvozak/opendata/4lep/Data/data_A.4lep.root",\
+# "/data/atlas/users/mvozak/opendata/4lep/Data/data_B.4lep.root" ,\
+# "/data/atlas/users/mvozak/opendata/4lep/Data/data_C.4lep.root",\
+# "/data/atlas/users/mvozak/opendata/4lep/Data/data_D.4lep.root"]
 
-tree = f.Get("mini")
-number_entries = tree.GetEntries()
+datafilelist = ["data_A.4lep.root",\
+"data_B.4lep.root" ,\
+"data_C.4lep.root",\
+"data_D.4lep.root" ]
 
+mcfilelist = ["/data/atlas/users/mvozak/opendata/4lep/MC/mc_345060.ggH125_ZZ4lep.4lep.root" ,\
+"/data/atlas/users/mvozak/opendata/4lep/MC/mc_363490.llll.4lep.root"]
 
-canvas = ROOT.TCanvas("canvas","plot a variable",800,600)
-canvas.Divide(2,2)
+goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
+'mc_341155.VBFH125_tautaull.4lep.root', \
+'mc_341947.ZH125_ZZ4lep.4lep.root', \
+'mc_341964.WH125_ZZ4lep.4lep.root', \
+'mc_344235.VBFH125_ZZ4lep.4lep.root', \
+'mc_345060.ggH125_ZZ4lep.4lep.root', \
+'mc_345323.VBFH125_WW2lep.4lep.root', \
+'mc_345324.ggH125_WW2lep.4lep.root', \
+'mc_345325.WpH125J_qqWW2lep.4lep.root', \
+'mc_345327.WpH125J_lvWW2lep.4lep.root', \
+'mc_345336.ZH125J_qqWW2lep.4lep.root', \
+'mc_345337.ZH125J_llWW2lep.4lep.root', \
+'mc_345445.ZH125J_vvWW2lep.4lep.root', \
+'mc_361106.Zee.4lep.root', \
+'mc_361107.Zmumu.4lep.root', \
+'mc_361108.Ztautau.4lep.root', \
+'mc_363356.ZqqZll.4lep.root', \
+'mc_363358.WqqZll.4lep.root', \
+'mc_363490.llll.4lep.root', \
+'mc_363491.lllv.4lep.root', \
+'mc_363492.llvv.4lep.root', \
+'mc_410000.ttbar_lep.4lep.root', \
+'mc_410011.single_top_tchan.4lep.root', \
+'mc_410012.single_antitop_tchan.4lep.root', \
+'mc_410013.single_top_wtchan.4lep.root', \
+'mc_410014.single_antitop_wtchan.4lep.root', \
+'mc_410025.single_top_schan.4lep.root', \
+'mc_410026.single_antitop_schan.4lep.root']
 
+def pthist(filelist, dataofmc):
+    
+    hist0 = ROOT.TH1F("pt1","transverse momentum; transverse momentum; Events ",40,0,100000)
+    hist1 = ROOT.TH1F("pt2","transverse momentum; transverse momentum; Events ",40,0,100000)
+    hist2 = ROOT.TH1F("pt3","transverse momentum; transverse momentum; Events ",40,0,100000)
+    hist3 = ROOT.TH1F("pt4","transverse momentum; transverse momentum; Events ",40,0,100000)
+    histlist = [hist0, hist1, hist2, hist3]
+    
+    
+    for bestand in filelist:
+        if dataofmc == 'data':
+            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
+        if dataofmc == 'mc':
+            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
+        
+        tree = f.Get('mini')
+        number_entries = tree.GetEntries()
 
+        for event in range(number_entries):
+            tree.GetEntry(event)
 
-# ptmax = 0
-# for event in tree:
-#     if tree.lep_pt > ptmax:
-#         ptmax = tree.lep_pt
-# print(ptmax)
+            if dataofmc == 'data':
+                for i in range(4):
+                    histlist[i].Fill(tree.lep_pt[i])
 
-hist = ROOT.TH1F("hist","transverse momentum; transverse momentum; Events ",20,0,100000)
-hist1 = ROOT.TH1F("hist1","transverse momentum; transverse momentum; Events ",20,0,100000)
-hist2 = ROOT.TH1F("hist2","transverse momentum; transverse momentum; Events ",20,0,100000)
-hist3 = ROOT.TH1F("hist3","transverse momentum; transverse momentum; Events ",20,0,100000)
+            if dataofmc == 'mc':
+                finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
+                for i in range(4):
+                    histlist[i].Fill(tree.lep_pt[i], finalmcWeight) 
+        b = ROOT.TFile.Open('/user/ksmits/BachelorProject/pthists/{}'.format(bestand), "RECREATE")
+        b.cd()
+        for i in range(4):
+            histlist[i].Write()  
 
-for event in tree:
-    hist.Fill(tree.lep_pt[0])
-    hist1.Fill(tree.lep_pt[1])
-    hist2.Fill(tree.lep_pt[2])
-    hist3.Fill(tree.lep_pt[3])
+lijst = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
-hist.SetLineColor(ROOT.kBlack) 
-hist.SetLineWidth(2) 
-hist.SetFillColor(ROOT.kAzure)
-
-hist1.SetLineColor(ROOT.kBlack) 
-hist1.SetLineWidth(2) 
-hist1.SetFillColor(ROOT.kAzure)
-
-hist2.SetLineColor(ROOT.kBlack) 
-hist2.SetLineWidth(2) 
-hist2.SetFillColor(ROOT.kAzure)
-
-hist3.SetLineColor(ROOT.kBlack) 
-hist3.SetLineWidth(2) 
-hist3.SetFillColor(ROOT.kAzure)
-
-canvas.cd(1)
-hist.Draw("HIST")
-
-canvas.cd(2)
-hist1.Draw("HIST")
-
-canvas.cd(3)
-hist2.Draw("HIST")
-
-canvas.cd(4)
-hist3.Draw("HIST")
-
-canvas.Print("pt.jpg")
+pthist(lijst, 'mc')
+    
