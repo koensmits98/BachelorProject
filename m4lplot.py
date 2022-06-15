@@ -235,6 +235,6 @@ def stack(filelist, imagename):
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
 # stack(goodfiles, 'goodfiles.jpg')
-# stack(ZZandHiggs, 'ZZandHiggs.jpg')
+stack(ZZandHiggs, 'ZZandHiggs.jpg')
 
 
