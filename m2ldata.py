@@ -14,8 +14,6 @@ higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
 lumi_data = 10
 
-
-
 def m2l(filelist):
     hist = ROOT.TH1F('m2l', "dileptonmass; invmass; events", 40, 0, 120000)
     

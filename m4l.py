@@ -6,6 +6,8 @@ lumi_data = 10
 higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
 "mc_363490.llll.4lep.root"]
 
+higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
+
 datafilelist = ["data_A.4lep.root",\
 "data_B.4lep.root" ,\
 "data_C.4lep.root",\
@@ -55,15 +57,12 @@ mclist = ['mc_341122.ggH125_tautaull.4lep.root' ,\
 
 
 
-def m4lhist(lijst, dataofmc, cut, scalefactor):
-    for bestand in lijst:
-        if dataofmc == 'data':
-            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
-        if dataofmc == 'mc':
-            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
-        
+def m4lhist(filelist, cut):
+    for bestand in filelist:
+        f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
         tree = f.Get('mini')
         number_entries = tree.GetEntries()
+        
         # if number_entries == 0:
         #     emptyfiles.append(bestand)
         #     continue
@@ -94,7 +93,6 @@ def m4lhist(lijst, dataofmc, cut, scalefactor):
                 if istight == False or ptcone == True or etcone == True or ptfilter == True:
                     continue
 
-            
             E4l_squared = np.sum(tree.lep_E) ** 2
             px = tree.lep_pt * np.cos(tree.lep_phi)
             py = tree.lep_pt * np.sin(tree.lep_phi)
@@ -104,26 +102,15 @@ def m4lhist(lijst, dataofmc, cut, scalefactor):
 
             m4l = (E4l_squared - p4l_squared) ** 0.5
             
+            finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
             
-            if dataofmc == 'mc':
-                if scalefactor == True:
-                    finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
-                if scalefactor == False:
-                    finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights
-                hist.Fill(m4l, finalmcWeight)
-            if dataofmc == 'data':
-                hist.Fill(m4l)
+            hist.Fill(m4l, finalmcWeight)
 
+        
         b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "RECREATE")
         # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), "RECREATE")
         b.cd()
         hist.Write()
 
-higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
+m4lhist(higgs, False)
 
-# m4lhist(higgs, 'mc', False, 'higgsuncut.root')
-# m4lhist(higgs, 'mc', True, 'higgscut.root')
-    
-# m4lhist(higgs, 'mc', True, True)
-
-m4lhist(datafilelist, 'data', True, True)

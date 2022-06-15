@@ -126,7 +126,7 @@ def m4lplot(filelist):
         canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
 
-# m4lplot(stackedlist)
+m4lplot(['datastackedcut.root'])
 
 
 
@@ -186,7 +186,6 @@ def stack(filelist, imagename):
     datahist.Draw('E')
     
     stack = {}
-
     stack['0'] = ROOT.TH1F('abc', "m4l", 100, 0 , 400000)
 
     # stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
@@ -235,6 +234,7 @@ def stack(filelist, imagename):
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-stack(goodfiles, 'goodfiles.jpg')
-stack(ZZandHiggs, 'ZZandHiggs.jpg')
+# stack(goodfiles, 'goodfiles.jpg')
+# stack(ZZandHiggs, 'ZZandHiggs.jpg')
+
 
