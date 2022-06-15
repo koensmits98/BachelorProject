@@ -45,7 +45,7 @@ goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
 'mc_410025.single_top_schan.4lep.root', \
 'mc_410026.single_antitop_schan.4lep.root']
 
-def pthist(filelist, dataofmc):
+def pthist(filelist):
     
     hist0 = ROOT.TH1F("pt1","transverse momentum; transverse momentum; Events ",40,0,100000)
     hist1 = ROOT.TH1F("pt2","transverse momentum; transverse momentum; Events ",40,0,100000)
@@ -55,25 +55,16 @@ def pthist(filelist, dataofmc):
     
     
     for bestand in filelist:
-        if dataofmc == 'data':
-            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
-        if dataofmc == 'mc':
-            f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
-        
+        f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
         tree = f.Get('mini')
         number_entries = tree.GetEntries()
 
         for event in range(number_entries):
             tree.GetEntry(event)
 
-            if dataofmc == 'data':
-                for i in range(4):
-                    histlist[i].Fill(tree.lep_pt[i])
-
-            if dataofmc == 'mc':
-                finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
-                for i in range(4):
-                    histlist[i].Fill(tree.lep_pt[i], finalmcWeight) 
+            finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
+            for i in range(4):
+                histlist[i].Fill(tree.lep_pt[i], finalmcWeight) 
         b = ROOT.TFile.Open('/user/ksmits/BachelorProject/pthists/{}'.format(bestand), "RECREATE")
         b.cd()
         for i in range(4):
@@ -81,5 +72,5 @@ def pthist(filelist, dataofmc):
 
 lijst = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
-pthist(lijst, 'mc')
+pthist(goodfiles)
     

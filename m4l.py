@@ -3,6 +3,35 @@ import numpy as np
 
 lumi_data = 10
 
+goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
+'mc_341155.VBFH125_tautaull.4lep.root', \
+'mc_341947.ZH125_ZZ4lep.4lep.root', \
+'mc_341964.WH125_ZZ4lep.4lep.root', \
+'mc_344235.VBFH125_ZZ4lep.4lep.root', \
+'mc_345060.ggH125_ZZ4lep.4lep.root', \
+'mc_345323.VBFH125_WW2lep.4lep.root', \
+'mc_345324.ggH125_WW2lep.4lep.root', \
+'mc_345325.WpH125J_qqWW2lep.4lep.root', \
+'mc_345327.WpH125J_lvWW2lep.4lep.root', \
+'mc_345336.ZH125J_qqWW2lep.4lep.root', \
+'mc_345337.ZH125J_llWW2lep.4lep.root', \
+'mc_345445.ZH125J_vvWW2lep.4lep.root', \
+'mc_361106.Zee.4lep.root', \
+'mc_361107.Zmumu.4lep.root', \
+'mc_361108.Ztautau.4lep.root', \
+'mc_363356.ZqqZll.4lep.root', \
+'mc_363358.WqqZll.4lep.root', \
+'mc_363490.llll.4lep.root', \
+'mc_363491.lllv.4lep.root', \
+'mc_363492.llvv.4lep.root', \
+'mc_410000.ttbar_lep.4lep.root', \
+'mc_410011.single_top_tchan.4lep.root', \
+'mc_410012.single_antitop_tchan.4lep.root', \
+'mc_410013.single_top_wtchan.4lep.root', \
+'mc_410014.single_antitop_wtchan.4lep.root', \
+'mc_410025.single_top_schan.4lep.root', \
+'mc_410026.single_antitop_schan.4lep.root']
+
 higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
 "mc_363490.llll.4lep.root"]
 
@@ -55,7 +84,14 @@ mclist = ['mc_341122.ggH125_tautaull.4lep.root' ,\
 'mc_410218.ttee.4lep.root' ,\
 'mc_410219.ttmumu.4lep.root' ]
 
-
+bigfiles = ['mc_363490.llll.4lep.root',
+'mc_361106.Zee.4lep.root',
+'mc_361107.Zmumu.4lep.root',
+'mc_410000.ttbar_lep.4lep.root',
+'mc_345336.ZH125J_qqWW2lep.4lep.root',
+'mc_345337.ZH125J_llWW2lep.4lep.root',
+'mc_363491.lllv.4lep.root',
+'mc_345060.ggH125_ZZ4lep.4lep.root']
 
 def m4lhist(filelist, cut):
     for bestand in filelist:
@@ -78,19 +114,25 @@ def m4lhist(filelist, cut):
             ptcone = False
             etcone = False
             ptfilter = False
-            ptlist = [25, 15, 10, 7]
+            ptlist = [25, 15, 15, 7]
 
             for i in range(3):
                 if tree.lep_isTightID[i] == False: 
                     istight = False
                 if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
                     ptcone = True
-                if abs(tree.lep_etcone20[i]/tree.lep_E[i]) > 0.15:   
+                if abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
                 if tree.lep_pt[i] < ptlist[i]:
                     ptfilter = True
+            for i in range(tree.jet_n):
+                if tree.jet_pt[i] < 25000:
+                    jetfilter = True
+                if tree.jet_jvt[i] < 0.59:
+                    jetfilter = True
+            
             if cut == True:
-                if istight == False or ptcone == True or etcone == True or ptfilter == True:
+                if istight == False or ptcone == True or etcone == True or ptfilter == True or jetfilter == True:
                     continue
 
             E4l_squared = np.sum(tree.lep_E) ** 2
@@ -102,15 +144,17 @@ def m4lhist(filelist, cut):
 
             m4l = (E4l_squared - p4l_squared) ** 0.5
             
-            finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON
-            
+            finalmcWeight = tree.XSection * 1000 * lumi_data * tree.mcWeight * 1/tree.SumWeights * tree.scaleFactor_LepTRIGGER * tree.scaleFactor_ELE * tree.scaleFactor_MUON * tree.scaleFactor_PILEUP
+
             hist.Fill(m4l, finalmcWeight)
 
+        if cut == True:
+            bestand.replace('.root', 'cut.root')
         
         b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "RECREATE")
         # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), "RECREATE")
         b.cd()
         hist.Write()
 
-m4lhist(higgs, False)
+m4lhist(bigfiles, False)
 

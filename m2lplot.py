@@ -1,5 +1,14 @@
 import ROOT
 
+bigfiles = ['mc_363490.llll.4lep.root',
+'mc_361106.Zee.4lep.root',
+'mc_361107.Zmumu.4lep.root',
+'mc_410000.ttbar_lep.4lep.root',
+'mc_345336.ZH125J_qqWW2lep.4lep.root',
+'mc_345337.ZH125J_llWW2lep.4lep.root',
+'mc_363491.lllv.4lep.root',
+'mc_345060.ggH125_ZZ4lep.4lep.root']
+
 goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
 'mc_341155.VBFH125_tautaull.4lep.root', \
 'mc_341947.ZH125_ZZ4lep.4lep.root', \
@@ -29,6 +38,15 @@ goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
 'mc_410025.single_top_schan.4lep.root', \
 'mc_410026.single_antitop_schan.4lep.root']
 
+bigfiles = ['mc_363490.llll.4lep.root',
+'mc_361106.Zee.4lep.root',
+'mc_361107.Zmumu.4lep.root',
+'mc_410000.ttbar_lep.4lep.root',
+'mc_345336.ZH125J_qqWW2lep.4lep.root',
+'mc_345337.ZH125J_llWW2lep.4lep.root',
+'mc_363491.lllv.4lep.root',
+'mc_345060.ggH125_ZZ4lep.4lep.root']
+
 higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
 ZZ = ['mc_363490.llll.4lep.root']
@@ -55,7 +73,7 @@ def m2lplot(filelist):
         imagename = bestand.replace('.root','.jpg', 1)
         canvas.Print('/user/ksmits/BachelorProject/m2lhists/{}'.format(imagename))
 
-# m2lplot(datastacked)
+m2lplot(bigfiles)
 
 def m2lwithdata(mcfilelist, filename):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
@@ -133,4 +151,4 @@ def m2lstacked(filelist, imagename):
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m2lhists/{}'.format(imagename))
 
-m2lstacked(goodfiles, 'goodfiles.jpg')
+# m2lstacked(bigfiles, 'bigfiles.jpg')

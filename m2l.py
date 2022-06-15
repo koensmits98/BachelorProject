@@ -61,7 +61,7 @@ lumi_data = 10
 
 
 
-def m2l(filelist):
+def m2l(filelist, cut):
     for bestand in filelist:
         f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand))
         tree = f.Get("mini")
@@ -73,6 +73,25 @@ def m2l(filelist):
 
         for event in range(number_entries):
             tree.GetEntry(event)
+
+            istight = True
+            ptcone = False
+            etcone = False
+            ptfilter = False
+            ptlist = [25, 15, 10, 7]
+
+            for i in range(3):
+                if tree.lep_isTightID[i] == False: 
+                    istight = False
+                if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
+                    ptcone = True
+                if abs(tree.lep_etcone20[i]/tree.lep_E[i]) > 0.15:   
+                    etcone = True
+                if tree.lep_pt[i] < ptlist[i]:
+                    ptfilter = True
+            if cut == True:
+                if istight == False or ptcone == True or etcone == True or ptfilter == True:
+                    continue
 
             checkpair = [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]]
             otherpair = [0,1,2,3]
@@ -136,6 +155,9 @@ def m2l(filelist):
         # hist.SetFillColor(ROOT.kAzure)
         # hist.Draw("HIST")
 
+        if cut == True:
+            bestand = bestand.replace('.root', 'cut.root')
+        
         b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m2lhists/{}'.format(bestand), "RECREATE")
         b.cd()
         hist.Write()    
@@ -143,7 +165,7 @@ def m2l(filelist):
         # histm4l.Write()
         # print(len(meerleptons))
 
-m2l(goodfileswithout)
+# m2l(goodfileswithout)
 
 
 

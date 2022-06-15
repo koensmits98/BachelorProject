@@ -12,7 +12,6 @@ goodfiles = ['mc_341122.ggH125_tautaull.4lep.root', 'mc_341155.VBFH125_tautaull.
 #     canvas.Print('{}.jpg'.format(bestand))
 
 f = ROOT.TFile.Open('mc_363493.lvvv.4lep.root', "READ")
-
 tree = f.Get('m4lhist')
 
 for i in range(10):
