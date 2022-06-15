@@ -220,7 +220,7 @@ def stack(filelist, imagename, cut):
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-stack(bigfiles, 'bigfiles.jpg', False)
+stack(bigfiles, 'bigfilecuts.jpg', True)
 # stack(ZZandHiggs, 'ZZandHiggs.jpg')
 
 

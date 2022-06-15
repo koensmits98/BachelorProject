@@ -113,16 +113,21 @@ def m4lhist(filelist, cut):
             istight = True
             ptcone = False
             etcone = False
+            etfilter = False
             ptfilter = False
             ptlist = [25, 15, 15, 7]
+            jetfilter = False
 
             for i in range(3):
                 if tree.lep_isTightID[i] == False: 
                     istight = False
                 if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
                     ptcone = True
-                if abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
+                if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
+                # print(tree.lep_etcone20)
+                if tree.lep_etcone20[i] > 2000:
+                    etfilter = True
                 if tree.lep_pt[i] < ptlist[i]:
                     ptfilter = True
             for i in range(tree.jet_n):
@@ -132,7 +137,7 @@ def m4lhist(filelist, cut):
                     jetfilter = True
             
             if cut == True:
-                if istight == False or ptcone == True or etcone == True or ptfilter == True or jetfilter == True:
+                if istight == False or ptcone == True or etcone == True or ptfilter == True or jetfilter == True or etfilter == True:
                     continue
 
             E4l_squared = np.sum(tree.lep_E) ** 2
@@ -149,12 +154,12 @@ def m4lhist(filelist, cut):
             hist.Fill(m4l, finalmcWeight)
 
         if cut == True:
-            bestand.replace('.root', 'cut.root')
+            bestand = bestand.replace('.root', 'cut.root')
         
         b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "RECREATE")
         # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), "RECREATE")
         b.cd()
         hist.Write()
 
-m4lhist(bigfiles, False)
+m4lhist(bigfiles, True)
 
