@@ -1,5 +1,6 @@
 import ROOT
 import copy
+import numpy as np
 
 mclist = ['mc_341122.ggH125_tautaull.4lep.root' ,\
 'mc_341155.VBFH125_tautaull.4lep.root' ,\
@@ -179,6 +180,11 @@ def layered(filelist, plotname):
 
 def stack(filelist, imagename):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
+    
+    datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/datastacked.root', 'read')
+    datahist = datafile.Get('m4lhist')
+    datahist.Draw('E')
+    
     stack = {}
 
     stack['0'] = ROOT.TH1F('abc', "m4l", 100, 0 , 400000)
@@ -188,13 +194,34 @@ def stack(filelist, imagename):
     # print(stack['0'])
     # a = stack['0'].Clone()
     # print(a)
-    i = 0
+    
     histlist = {}
+    countslist = []
+    sortedlist = []
+    indexlist = []
     for bestand in filelist:
-        i += 1
-        print(i)
         f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
         hist = f.Get('m4lhist')
+        counts = hist.Integral()
+        countslist.append(counts)
+        sortedlist.append(counts)
+    print(countslist)
+    sortedlist.sort(reverse=True)
+    print(sortedlist)
+    for i in sortedlist:
+        indexlist.append(countslist.index(i))
+    
+    print(indexlist)
+    
+    i = 0
+
+    for j in indexlist:
+        i += 1
+        print(i)
+        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filelist[j]), "READ")
+        hist = f.Get('m4lhist')
+        if filelist[j] == "mc_363490.llll.4lep.root":
+            hist.Scale(1.3)
         
         stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
         stack['{}'.format(i)].Add(hist)
@@ -204,10 +231,10 @@ def stack(filelist, imagename):
         # print(stack['{}'.format(i)])
 
     for i in range(i, 0, -1):
-        stack['{}'.format(i)].SetFillColor(i)
+        stack['{}'.format(i)].SetFillColor(i+1)
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-# stack(goodfiles, 'goodfiles.jpg')
+stack(goodfiles, 'goodfiles.jpg')
 stack(ZZandHiggs, 'ZZandHiggs.jpg')
 
