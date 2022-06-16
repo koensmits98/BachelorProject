@@ -37,53 +37,6 @@ higgsandZZ = ["mc_345060.ggH125_ZZ4lep.4lep.root" ,\
 
 higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
-datafilelist = ["data_A.4lep.root",\
-"data_B.4lep.root" ,\
-"data_C.4lep.root",\
-"data_D.4lep.root" ]
-
-mclist = ['mc_341122.ggH125_tautaull.4lep.root' ,\
-'mc_341155.VBFH125_tautaull.4lep.root' ,\
-'mc_341947.ZH125_ZZ4lep.4lep.root' ,\
-'mc_341964.WH125_ZZ4lep.4lep.root' ,\
-'mc_344235.VBFH125_ZZ4lep.4lep.root' ,\
-'mc_345060.ggH125_ZZ4lep.4lep.root' ,\
-'mc_345323.VBFH125_WW2lep.4lep.root' ,\
-'mc_345324.ggH125_WW2lep.4lep.root' ,\
-'mc_345325.WpH125J_qqWW2lep.4lep.root' ,\
-'mc_345327.WpH125J_lvWW2lep.4lep.root' ,\
-'mc_345336.ZH125J_qqWW2lep.4lep.root' ,\
-'mc_345337.ZH125J_llWW2lep.4lep.root' ,\
-'mc_345445.ZH125J_vvWW2lep.4lep.root' ,\
-'mc_361100.Wplusenu.4lep.root' ,\
-'mc_361101.Wplusmunu.4lep.root' ,\
-'mc_361102.Wplustaunu.4lep.root' ,\
-'mc_361103.Wminusenu.4lep.root' ,\
-'mc_361104.Wminusmunu.4lep.root' ,\
-'mc_361105.Wminustaunu.4lep.root' ,\
-'mc_361106.Zee.4lep.root' ,\
-'mc_361107.Zmumu.4lep.root' ,\
-'mc_361108.Ztautau.4lep.root' ,\
-'mc_363356.ZqqZll.4lep.root' ,\
-'mc_363358.WqqZll.4lep.root' ,\
-'mc_363359.WpqqWmlv.4lep.root' ,\
-'mc_363360.WplvWmqq.4lep.root' ,\
-'mc_363489.WlvZqq.4lep.root' ,\
-'mc_363490.llll.4lep.root' ,\
-'mc_363491.lllv.4lep.root' ,\
-'mc_363492.llvv.4lep.root' ,\
-'mc_363493.lvvv.4lep.root' ,\
-'mc_410000.ttbar_lep.4lep.root' ,\
-'mc_410011.single_top_tchan.4lep.root' ,\
-'mc_410012.single_antitop_tchan.4lep.root' ,\
-'mc_410013.single_top_wtchan.4lep.root' ,\
-'mc_410014.single_antitop_wtchan.4lep.root' ,\
-'mc_410025.single_top_schan.4lep.root' ,\
-'mc_410026.single_antitop_schan.4lep.root' ,\
-'mc_410155.ttW.4lep.root' ,\
-'mc_410218.ttee.4lep.root' ,\
-'mc_410219.ttmumu.4lep.root' ]
-
 bigfiles = ['mc_363490.llll.4lep.root',
 'mc_361106.Zee.4lep.root',
 'mc_361107.Zmumu.4lep.root',
@@ -110,13 +63,30 @@ def m4lhist(filelist, cut):
         for event in range(number_entries):
             tree.GetEntry(event)
             
+            sfos = True
             istight = True
             ptcone = False
             etcone = False
             etfilter = False
             ptfilter = False
-            ptlist = [25, 15, 15, 7]
+            ptlist = [25, 15, 10, 7]
             jetfilter = False
+            
+            checkpair = [[0,1],[0,2],[0,3]]
+            pairs_found = []
+            for i,j in checkpair:
+                otherpair = [0,1,2,3]
+                otherpair.remove(i)
+                otherpair.remove(j)
+
+                index0 = otherpair[0]
+                index1 = otherpair[1]
+
+                if tree.lep_charge[i] == - tree.lep_charge[j] and tree.lep_type[i] == tree.lep_type[j] \
+                and tree.lep_charge[index0] == - tree.lep_charge[index1] and tree.lep_type[index0] == tree.lep_type[index1]: 
+                    pairs_found.append([i,j])
+            if len(pairs_found) == 0:
+                sfos = False
 
             for i in range(3):
                 if tree.lep_isTightID[i] == False: 
@@ -125,7 +95,6 @@ def m4lhist(filelist, cut):
                     ptcone = True
                 if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
-                # print(tree.lep_etcone20)
                 if tree.lep_etcone20[i] > 2000:
                     etfilter = True
                 if tree.lep_pt[i] < ptlist[i]:
@@ -137,7 +106,8 @@ def m4lhist(filelist, cut):
                     jetfilter = True
             
             if cut == True:
-                if istight == False or ptcone == True or etcone == True or ptfilter == True or jetfilter == True or etfilter == True:
+                if istight == False or ptcone == True or etcone == True or ptfilter == True\
+                or jetfilter == True or etfilter == True or sfos == False:
                     continue
 
             E4l_squared = np.sum(tree.lep_E) ** 2

@@ -119,8 +119,8 @@ def m4lplot(filelist, cut):
     
     
     for bestand in filelist:
-        if cut == True:
-            bestand = bestand.replace('.root', 'cut.root')
+        # if cut == True:
+        #     bestand = bestand.replace('.root', 'cut.root')
 
         f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
         hist = f.Get('m4lhist')
@@ -137,24 +137,12 @@ def m4lplot(filelist, cut):
         imagename = bestand.replace('.root','.jpg', 1)
         canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-m4lplot(bigfiles, True)
+# m4lplot(bigfiles, True)
 
-# m4lplot(['datastackedcut1.root'])
+m4lplot(['datastackedcut.root'] , True)
 
-
-
-def integral(filename):
-    f = ROOT.TFile.Open(filename)
-    hist = f.Get('m4lhist')
-    integral = hist.Integral()
-    print(integral)
-
-# integral('/user/ksmits/BachelorProject/m4lhists/higgsuncut.root')
-# integral('/user/ksmits/BachelorProject/m4lhists/higgscut.root')
 
 def stack(filelist, imagename, cut):
-
-    
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
     
     if cut == True:
@@ -162,7 +150,7 @@ def stack(filelist, imagename, cut):
     if cut == False:
         datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/datastacked.root', 'read')
     datahist = datafile.Get('m4lhist')
-    datahist.Draw('E')
+    # datahist.Draw('E')
     
     stack = {}
     stack['0'] = ROOT.TH1F('abc', "m4l", 100, 0 , 400000)
@@ -220,7 +208,7 @@ def stack(filelist, imagename, cut):
         stack['{}'.format(i)].Draw('same hist')
     canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
-stack(bigfiles, 'bigfilecuts.jpg', True)
+stack(bigfiles, 'bigfiles.jpg', False)
 # stack(ZZandHiggs, 'ZZandHiggs.jpg')
 
 

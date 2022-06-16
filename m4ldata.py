@@ -11,6 +11,9 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
+histslist = ['m4l', 'cut1', 'cut2', 'cut3']
+histlist[i] = ROOT.TH1F('{}}'.format(histlist[i]),"plot m4l",100, 0, 400000)
+
 def m4lstacked(filelist, cut, filename):
     stackedhist = ROOT.TH1F('m4lhist',"plot m4l",100, 0, 400000)
      
@@ -21,14 +24,33 @@ def m4lstacked(filelist, cut, filename):
         
         for event in range(number_entries):
             tree.GetEntry(event)
+        
             
+            
+            sfos = True
             istight = True
             ptcone = False
             etcone = False
             etfilter = False
             ptfilter = False
-            ptlist = [25, 15, 15, 7]
             jetfilter = False
+            ptlist = [25, 15, 10, 7]
+
+            checkpair = [[0,1],[0,2],[0,3]]
+            pairs_found = []
+            for i,j in checkpair:
+                otherpair = [0,1,2,3]
+                otherpair.remove(i)
+                otherpair.remove(j)
+
+                index0 = otherpair[0]
+                index1 = otherpair[1]
+
+                if tree.lep_charge[i] == - tree.lep_charge[j] and tree.lep_type[i] == tree.lep_type[j] \
+                and tree.lep_charge[index0] == - tree.lep_charge[index1] and tree.lep_type[index0] == tree.lep_type[index1]: 
+                    pairs_found.append([i,j])
+            if len(pairs_found) == 0:
+                sfos = False
 
             for i in range(3):
                 if tree.lep_isTightID[i] == False: 
@@ -37,7 +59,6 @@ def m4lstacked(filelist, cut, filename):
                     ptcone = True
                 if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
-                # print(tree.lep_etcone20)
                 if tree.lep_etcone20[i] > 2000:
                     etfilter = True
                 if tree.lep_pt[i] < ptlist[i]:
@@ -49,7 +70,8 @@ def m4lstacked(filelist, cut, filename):
                     jetfilter = True
             
             if cut == True:
-                if istight == False or ptcone == True or etcone == True or ptfilter == True or jetfilter == True or etfilter == True:
+                if istight == False or ptcone == True or etcone == True or ptfilter == True\
+                or jetfilter == True or etfilter == True or sfos == False:
                     continue
 
             E4l_squared = np.sum(tree.lep_E) ** 2
@@ -70,4 +92,4 @@ def m4lstacked(filelist, cut, filename):
     b.cd()
     stackedhist.Write()
 
-m4lstacked(datafilelist, True, 'datastackedcut1.root')
+m4lstacked(datafilelist, True, 'datastackedcut.root')
