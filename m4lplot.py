@@ -113,6 +113,12 @@ datastacked = ['datastacked.root']
 
 higgs = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
+
+def getshortname(bestand):
+    shortname = bestand.replace('.4lep.root', '')
+    return shortname
+
+
 #this function plots every hist in the list and gives it an image with the same name
 def m4lplot(filelist, cut):
     stackedhist = ROOT.TH1F('stackedhist',"plot m4l", 100, 0 , 400000)
@@ -138,19 +144,16 @@ def m4lplot(filelist, cut):
         canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
 
 # m4lplot(bigfiles, True)
+# m4lplot(['datastackedcut.root'] , True)
 
-m4lplot(['datastackedcut.root'] , True)
 
-
-def stack(filelist, imagename, cut):
+def stack(filelist, directory, imagename, cut):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
     
-    if cut == True:
-        datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/datastackedcut.root', 'read')
-    if cut == False:
-        datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/datastacked.root', 'read')
-    datahist = datafile.Get('m4lhist')
-    # datahist.Draw('E')
+
+    datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/{}/datastacked.root'.format(directory), 'read')
+    datahist = datafile.Get(cut)
+    datahist.Draw('E')
     
     stack = {}
     stack['0'] = ROOT.TH1F('abc', "m4l", 100, 0 , 400000)
@@ -166,12 +169,9 @@ def stack(filelist, imagename, cut):
     sortedlist = []
     indexlist = []
     for bestand in filelist:
-        if cut == True:
-            bestand = bestand.replace('.root','cut.root')
-            print(bestand)
-        
-        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "READ")
-        hist = f.Get('m4lhist')
+
+        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/{}/{}'.format(directory,bestand), "READ")
+        hist = f.Get(cut)
         counts = hist.Integral()
         countslist.append(counts)
         sortedlist.append(counts)
@@ -183,15 +183,20 @@ def stack(filelist, imagename, cut):
     
     print(indexlist)
     
-    i = 0
+    leg = ROOT.TLegend(.30,.60,.80,.80)
+    leg.SetBorderSize(0)
+    leg.SetFillColor(0)
+    leg.SetFillStyle(0)
+    leg.SetTextFont(42)
+    leg.SetTextSize(0.035)
 
+    i = 0
     for j in indexlist:
-        filelist[j] = filelist[j].replace('.root', 'cut.root')
         i += 1
         # print(i)
         print(filelist[j])
-        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filelist[j]), "READ")
-        hist = f.Get('m4lhist')
+        f = ROOT.TFile.Open('/user/ksmits/BachelorProject/{}/{}'.format(directory,filelist[j]), "READ")
+        hist = f.Get(cut)
         
         if filelist[j] == "mc_363490.llll.4lep.root":
             hist.Scale(1.3)
@@ -199,6 +204,7 @@ def stack(filelist, imagename, cut):
         stack['{}'.format(i)] = stack['{}'.format(i-1)].Clone()
         stack['{}'.format(i)].Add(hist)
         stack['{}'.format(i)].SetDirectory(0)
+        leg.AddEntry(stack['{}'.format(i)], '{},    {}'.format(getshortname(filelist[j]), int(hist.Integral())), 'f')
 
 
         # print(stack['{}'.format(i)])
@@ -206,9 +212,14 @@ def stack(filelist, imagename, cut):
     for i in range(i, 0, -1):
         stack['{}'.format(i)].SetFillColor(i+1)
         stack['{}'.format(i)].Draw('same hist')
-    canvas.Print('/user/ksmits/BachelorProject/m4lhists/{}'.format(imagename))
+    
+    leg.Draw('same')
+    canvas.Print('/user/ksmits/BachelorProject/{}/{}'.format(directory,imagename))
 
-stack(bigfiles, 'bigfiles.jpg', False)
+stack(bigfiles, 'm4lrecreate', 'aabigfiles.jpg', 'm4lhist')
+stack(bigfiles, 'm4lrecreate', 'aabigfilescut1.jpg' , 'cut1')
+stack(bigfiles, 'm4lrecreate', 'aabigfilescut2.jpg', 'cut2')
+stack(bigfiles, 'm4lrecreate', 'aabigfilescut3.jpg', 'cut3')
 # stack(ZZandHiggs, 'ZZandHiggs.jpg')
 
 

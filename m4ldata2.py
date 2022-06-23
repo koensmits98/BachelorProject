@@ -11,14 +11,42 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
+def isGoodLepton(tree, ilep):
+    if( (tree.lep_pt[ilep] > 5000.) and  \
+        ( abs( tree.lep_eta[ilep]) < 2.5) and \
+        ( (tree.lep_ptcone30[ilep]/tree.lep_pt[ilep]) < 0.3) and \
+        ( (tree.lep_etcone20[ilep] / tree.lep_pt[ilep]) < 0.3 ) ):
+        return True
+    else: 
+        return False
 
+def isGoodMuon(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 13  and
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 3) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) ):
+            return True
+    else: 
+        return False
+
+def isGoodElectron(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 11  and
+        ( tree.lep_pt[ilep] > 7000. )      and 
+        ( abs( tree.lep_eta[ilep]) < 2.47) and 
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 5) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) 
+        ):
+            return True
+    else: 
+        return False
 
 def m4lstacked(filelist):
-    histnames = ['m4lhist', 'cut1', 'cut2', 'cut3']
+    histnames = ['m4lhist', 'cut1', 'cut2', 'cut3', 'cut4', 'cut5', 'cut6']
     histlist = []
     for histname in histnames:
-        histlist.append(ROOT.TH1F(histname,"plot m4l",100, 0, 400000))
-    
+        histlist.append(ROOT.TH1F(histname,"plot m4l", 23, 80000, 170000))
+
 
     for bestand in filelist:
         f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
@@ -43,10 +71,10 @@ def m4lstacked(filelist):
             istight = True
             ptcone = False
             etcone = False
-            etfilter = False
             ptfilter = False
             jetfilter = False
-            ptlist = [25, 15, 10, 7]
+            goodlepton = True
+            ptlist = [25000, 15000, 10000, 7000]
 
             checkpair = [[0,1],[0,2],[0,3]]
             pairs_found = []
@@ -64,17 +92,18 @@ def m4lstacked(filelist):
             if len(pairs_found) == 0:
                 sfos = False
 
-            for i in range(3):
+            for i in range(4):
                 if tree.lep_isTightID[i] == False: 
                     istight = False
                 if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
                     ptcone = True
                 if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
-                if tree.lep_etcone20[i] > 2000:
-                    etfilter = True
                 if tree.lep_pt[i] < ptlist[i]:
                     ptfilter = True
+                if isGoodLepton(tree, i) == False and isGoodMuon(tree, i) == False and isGoodElectron(tree, i) == False:
+                    goodlepton = False
+            
             for i in range(tree.jet_n):
                 if tree.jet_pt[i] < 25000:
                     jetfilter = True
@@ -85,22 +114,33 @@ def m4lstacked(filelist):
             if sfos == False:
                 continue
             histlist[1].Fill(m4l)
-            if istight == False or ptcone == True or etcone == True or ptfilter == True:
+            if ptfilter == True:
                 continue
             histlist[2].Fill(m4l)
-            if jetfilter == True or etfilter == True :
+            if goodlepton == False:
                 continue
             histlist[3].Fill(m4l)
+            if jetfilter == True:
+                continue
+            histlist[4].Fill(m4l)
+            if istight == False:
+                continue
+            histlist[5].Fill(m4l)
+            if ptcone == True or etcone == True:
+                continue
+            histlist[6].Fill(m4l)
 
             
 
 
-    b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format('datastacked.root'), "RECREATE")
+    b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lrecreate/{}'.format('datastacked.root'), "RECREATE")
         
     
     # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), 'recreate')
     b.cd()
     for i in range(len(histlist)):
+        histlist[i].SetStats(False)
         histlist[i].Write()
+    b.Close()
 
 m4lstacked(datafilelist)

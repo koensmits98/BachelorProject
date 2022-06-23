@@ -17,6 +17,28 @@ bigfiles = ['mc_363490.llll.4lep.root',
 'mc_363491.lllv.4lep.root',
 'mc_345060.ggH125_ZZ4lep.4lep.root']
 
+goodfileswithout = [
+'mc_341155.VBFH125_tautaull.4lep.root', \
+'mc_341947.ZH125_ZZ4lep.4lep.root', \
+'mc_341964.WH125_ZZ4lep.4lep.root', \
+'mc_344235.VBFH125_ZZ4lep.4lep.root', \
+'mc_345323.VBFH125_WW2lep.4lep.root', \
+'mc_345324.ggH125_WW2lep.4lep.root', \
+'mc_345325.WpH125J_qqWW2lep.4lep.root', \
+'mc_345327.WpH125J_lvWW2lep.4lep.root', \
+'mc_345445.ZH125J_vvWW2lep.4lep.root', \
+'mc_361108.Ztautau.4lep.root', \
+'mc_363356.ZqqZll.4lep.root', \
+'mc_363358.WqqZll.4lep.root', \
+'mc_363492.llvv.4lep.root', \
+'mc_410000.ttbar_lep.4lep.root', \
+'mc_410011.single_top_tchan.4lep.root', \
+'mc_410012.single_antitop_tchan.4lep.root', \
+'mc_410013.single_top_wtchan.4lep.root', \
+'mc_410014.single_antitop_wtchan.4lep.root', \
+'mc_410025.single_top_schan.4lep.root', \
+'mc_410026.single_antitop_schan.4lep.root']
+
 otherfiles = ['mc_361107.Zmumu.4lep.root',\
 'mc_410000.ttbar_lep.4lep.root',\
 'mc_345336.ZH125J_qqWW2lep.4lep.root',\
@@ -24,49 +46,53 @@ otherfiles = ['mc_361107.Zmumu.4lep.root',\
 'mc_363491.lllv.4lep.root',\
 'mc_345060.ggH125_ZZ4lep.4lep.root']
 
-#  def isGoodLepton(tree, ilep):
-#  if( (tree.lep_pt[ilep] > 5000.) and  
-#      ( abs( tree.lep_eta[ilep]) < 2.5) and 
-#      ( (tree.lep_ptcone30[ilep]/tree.lep_pt[ilep]) < 0.3) and
-#      ( (tree.lep_etcone20[ilep] / tree.lep_pt[ilep]) < 0.3 ) ):
-#     return True
-#  else: 
-#     return False
+def isGoodJet(tree, ijet):
+   if( tree.jet_pt[ijet] > 30000. and abs(tree.jet_eta[ijet]) < 4.4): return True
+   else: return False
 
-# def isGoodMuon(tree, ilep, lv):
-#   if( abs(tree.lep_type[ilep] ) == 13  and
-#     ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 3) and
-#     ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( lv.Theta() )) < 0.5) ):
-#           return True
-#   else: 
-#      return False
+def isGoodLepton(tree, ilep):
+    if( (tree.lep_pt[ilep] > 5000.) and  \
+        ( abs( tree.lep_eta[ilep]) < 2.5) and \
+        ( (tree.lep_ptcone30[ilep]/tree.lep_pt[ilep]) < 0.3) and \
+        ( (tree.lep_etcone20[ilep] / tree.lep_pt[ilep]) < 0.3 ) ):
+        return True
+    else: 
+        return False
 
-# def isGoodElectron(tree, ilep, lv):
-#   if( abs(tree.lep_type[ilep] ) == 11  and
-#     ( tree.lep_pt[ilep] > 7000. )      and 
-#     ( abs( tree.lep_eta[ilep]) < 2.47) and 
-#     ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 5) and
-#     ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( lv.Theta() )) < 0.5) 
-#     ):
-#         return True
-#   else: return False
+def isGoodMuon(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 13  and
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 3) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) ):
+            return True
+    else: 
+        return False
 
+def isGoodElectron(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 11  and
+        ( tree.lep_pt[ilep] > 7000. )      and 
+        ( abs( tree.lep_eta[ilep]) < 2.47) and 
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 5) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) 
+        ):
+            return True
+    else: 
+        return False
 
-
+range1 = [100, 0, 400000]
+range2 = [25, 80000, 170000]
 
 def m4lhist(filelist):
-    histnames = ['m4lhist', 'cut1', 'cut2', 'cut3']
+    histnames = ['m4lhist', 'cut1', 'cut2', 'cut3' , 'cut4', 'cut5', 'cut6']
     k = 0
     for bestand in filelist:
         histlist = []
         for histname in histnames:
-            histlist.append(ROOT.TH1F(histname,"plot m4l",100, 0, 400000))
+            histlist.append(ROOT.TH1F(histname,"plot m4l", 23, 80000, 170000))
             print(histlist)
-        # for i in range(len(histlist)):
-        #     print(histlist[i])
+
         directory = '/data/atlas/users/mvozak/opendata/4lep/MC/{}'.format(bestand)
-        # print(bestand)
-        # print(histlist)
         print(directory)
         f = ROOT.TFile.Open(directory, 'READ')
         tree = f.Get('mini')
@@ -95,10 +121,10 @@ def m4lhist(filelist):
             istight = True
             ptcone = False
             etcone = False
-            etfilter = False
             ptfilter = False
             jetfilter = False
-            ptlist = [25, 15, 10, 7]
+            goodlepton = True
+            ptlist = [25000, 15000, 10000, 7000]
 
             checkpair = [[0,1],[0,2],[0,3]]
             pairs_found = []
@@ -116,17 +142,19 @@ def m4lhist(filelist):
             if len(pairs_found) == 0:
                 sfos = False
 
-            for i in range(3):
+            for i in range(4):
                 if tree.lep_isTightID[i] == False: 
                     istight = False
+                if isGoodLepton
                 if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
                     ptcone = True
                 if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
                     etcone = True
-                if tree.lep_etcone20[i] > 2000:
-                    etfilter = True
                 if tree.lep_pt[i] < ptlist[i]:
                     ptfilter = True
+                if isGoodLepton(tree, i) == False and isGoodMuon(tree, i) == False and isGoodElectron(tree, i) == False:
+                    goodlepton = False
+            
             for i in range(tree.jet_n):
                 if tree.jet_pt[i] < 25000:
                     jetfilter = True
@@ -137,37 +165,35 @@ def m4lhist(filelist):
             if sfos == False:
                 continue
             histlist[1].Fill(m4l, finalmcWeight)
-            if istight == False or ptcone == True or etcone == True or ptfilter == True:
+            
+            if ptfilter == True:
                 continue
             histlist[2].Fill(m4l, finalmcWeight)
-            if jetfilter == True or etfilter == True :
+            if goodlepton == False:
                 continue
             histlist[3].Fill(m4l, finalmcWeight)
-
-
-
-        b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "RECREATE")
-        # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), "RECREATE")
+            if jetfilter == True:
+                continue
+            histlist[4].Fill(m4l, finalmcWeight)
+            if istight == False:
+                continue
+            histlist[5].Fill(m4l, finalmcWeight)
+            if ptcone == True or etcone == True:
+                continue
+            histlist[6].Fill(m4l, finalmcWeight)
+        b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lrecreate/{}'.format(bestand), "RECREATE")
         b.cd()
         k += 1
         print(k)
-        # print(len(histlist))
-        print(histlist)
         for i in range(len(histlist)):
             histlist[i].Write()
-        # del histlist
+        b.Close()
 
-# m4lhist(otherfiles)
+m4lhist(goodfileswithout)
 
+histparameters1 = [100, 0, 400000]
+histparameters2 = [23, 80000 , 170000]
 
-m4lhist(['mc_363490.llll.4lep.root'])
-m4lhist(['mc_361106.Zee.4lep.root'])
-m4lhist(['mc_361107.Zmumu.4lep.root'])
-m4lhist(['mc_410000.ttbar_lep.4lep.root'])
-m4lhist(['mc_345336.ZH125J_qqWW2lep.4lep.root'])
-m4lhist(['mc_345337.ZH125J_llWW2lep.4lep.root'])
-m4lhist(['mc_363491.lllv.4lep.root'])
-m4lhist(['mc_345060.ggH125_ZZ4lep.4lep.root'])
 
 
 

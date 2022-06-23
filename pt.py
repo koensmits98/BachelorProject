@@ -16,6 +16,15 @@ datafilelist = ["data_A.4lep.root",\
 mcfilelist = ["/data/atlas/users/mvozak/opendata/4lep/MC/mc_345060.ggH125_ZZ4lep.4lep.root" ,\
 "/data/atlas/users/mvozak/opendata/4lep/MC/mc_363490.llll.4lep.root"]
 
+bigfiles = ['mc_363490.llll.4lep.root',
+'mc_361106.Zee.4lep.root',
+'mc_361107.Zmumu.4lep.root',
+'mc_410000.ttbar_lep.4lep.root',
+'mc_345336.ZH125J_qqWW2lep.4lep.root',
+'mc_345337.ZH125J_llWW2lep.4lep.root',
+'mc_363491.lllv.4lep.root',
+'mc_345060.ggH125_ZZ4lep.4lep.root']
+
 goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
 'mc_341155.VBFH125_tautaull.4lep.root', \
 'mc_341947.ZH125_ZZ4lep.4lep.root', \
@@ -47,14 +56,17 @@ goodfiles = ['mc_341122.ggH125_tautaull.4lep.root',\
 
 def pthist(filelist):
     
-    hist0 = ROOT.TH1F("pt1","transverse momentum; transverse momentum; Events ",40,0,100000)
-    hist1 = ROOT.TH1F("pt2","transverse momentum; transverse momentum; Events ",40,0,100000)
-    hist2 = ROOT.TH1F("pt3","transverse momentum; transverse momentum; Events ",40,0,100000)
-    hist3 = ROOT.TH1F("pt4","transverse momentum; transverse momentum; Events ",40,0,100000)
-    histlist = [hist0, hist1, hist2, hist3]
+
     
     
     for bestand in filelist:
+
+        hist0 = ROOT.TH1F("pt1","transverse momentum; transverse momentum; Events ",40,0,100000)
+        hist1 = ROOT.TH1F("pt2","transverse momentum; transverse momentum; Events ",40,0,100000)
+        hist2 = ROOT.TH1F("pt3","transverse momentum; transverse momentum; Events ",40,0,100000)
+        hist3 = ROOT.TH1F("pt4","transverse momentum; transverse momentum; Events ",40,0,100000)
+        histlist = [hist0, hist1, hist2, hist3]
+        
         f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/MC/{}".format(bestand), 'READ')
         tree = f.Get('mini')
         number_entries = tree.GetEntries()
@@ -69,8 +81,8 @@ def pthist(filelist):
         b.cd()
         for i in range(4):
             histlist[i].Write()  
-
+        b.Close()
 lijst = ['mc_345060.ggH125_ZZ4lep.4lep.root']
 
-pthist(goodfiles)
+pthist(bigfiles)
     

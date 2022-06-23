@@ -1,4 +1,5 @@
 import ROOT
+import numpy as np
 
 bigfiles = ['mc_363490.llll.4lep.root',
 'mc_361106.Zee.4lep.root',
@@ -73,7 +74,7 @@ def m2lplot(filelist):
         imagename = bestand.replace('.root','.jpg', 1)
         canvas.Print('/user/ksmits/BachelorProject/m2lhists/{}'.format(imagename))
 
-m2lplot(bigfiles)
+# m2lplot(datastacked)
 
 def m2lwithdata(mcfilelist, filename):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
@@ -97,13 +98,13 @@ def m2lwithdata(mcfilelist, filename):
 
 
 
-def m2lstacked(filelist, imagename):
+def m2lstacked(filelist, imagename, cut):
     canvas = ROOT.TCanvas("canvas","plot a variable", 800, 600)
  
     mchist = hist = ROOT.TH1F('mchist', "dileptonmass; invmass; events", 40, 0, 120000)
 
     datafile = ROOT.TFile.Open('/user/ksmits/BachelorProject/m2lhists/datastacked.root', 'READ')
-    datahist = datafile.Get('m2l')
+    datahist = datafile.Get(cut)
     datahist.Draw('E')
     
     stack = {}
@@ -116,7 +117,7 @@ def m2lstacked(filelist, imagename):
     indexlist = []
     for bestand in filelist:
         f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m2lhists/{}'.format(bestand), "READ")
-        hist = f.Get('m2l')
+        hist = f.Get(cut)
         counts = hist.Integral()
         countslist.append(counts)
         sortedlist.append(counts)
@@ -128,13 +129,19 @@ def m2lstacked(filelist, imagename):
     
     print(indexlist)
     
+    leg = ROOT.TLegend(.10,.50,.50,.80)
+    leg.SetBorderSize(0)
+    leg.SetFillColor(0)
+    leg.SetFillStyle(0)
+    leg.SetTextFont(42)
+    leg.SetTextSize(0.035)
+    
     i = 0
-
     for j in indexlist:
         i += 1
         print(i)
         f = ROOT.TFile.Open('/user/ksmits/BachelorProject/m2lhists/{}'.format(filelist[j]), "READ")
-        hist = f.Get('m2l')
+        hist = f.Get(cut)
         hist.Rebin(25)
         if filelist[j] == "mc_363490.llll.4lep.root":
             hist.Scale(1.3)
@@ -143,12 +150,17 @@ def m2lstacked(filelist, imagename):
         stack['{}'.format(i)].Add(hist)
         stack['{}'.format(i)].SetDirectory(0)
 
-
+        leg.AddEntry(stack['{}'.format(i)], '{},    {}'.format(filelist[j], int(hist.Integral())), 'f')
         # print(stack['{}'.format(i)])
 
     for i in range(i, 0, -1):
         stack['{}'.format(i)].SetFillColor(i+1)
         stack['{}'.format(i)].Draw('same hist')
+    
+        leg.Draw('same')
+        datahist.Draw('same E')
     canvas.Print('/user/ksmits/BachelorProject/m2lhists/{}'.format(imagename))
 
-# m2lstacked(bigfiles, 'bigfiles.jpg')
+m2lstacked(bigfiles, 'bigfiles.jpg', 'm2l')
+
+

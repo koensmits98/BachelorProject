@@ -11,12 +11,47 @@ datafilelist = ["data_A.4lep.root",\
 "data_C.4lep.root",\
 "data_D.4lep.root" ]
 
-histslist = ['m4l', 'cut1', 'cut2', 'cut3']
-histlist[i] = ROOT.TH1F('{}}'.format(histlist[i]),"plot m4l",100, 0, 400000)
+def isGoodJet(tree, ijet):
+   if( tree.jet_pt[ijet] > 30000. and abs(tree.jet_eta[ijet]) < 4.4): return True
+   else: return False
 
-def m4lstacked(filelist, cut, filename):
-    stackedhist = ROOT.TH1F('m4lhist',"plot m4l",100, 0, 400000)
-     
+def isGoodLepton(tree, ilep):
+    if( (tree.lep_pt[ilep] > 5000.) and  \
+        ( abs( tree.lep_eta[ilep]) < 2.5) and \
+        ( (tree.lep_ptcone30[ilep]/tree.lep_pt[ilep]) < 0.3) and \
+        ( (tree.lep_etcone20[ilep] / tree.lep_pt[ilep]) < 0.3 ) ):
+        return True
+    else: 
+        return False
+
+def isGoodMuon(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 13  and
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 3) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) ):
+            return True
+    else: 
+        return False
+
+def isGoodElectron(tree, ilep):
+    theta = 2*np.arctan(np.exp(-tree.lep_eta[ilep]))
+    if( abs(tree.lep_type[ilep] ) == 11  and
+        ( tree.lep_pt[ilep] > 7000. )      and 
+        ( abs( tree.lep_eta[ilep]) < 2.47) and 
+        ( abs(tree.lep_trackd0pvunbiased[ilep])/tree.lep_tracksigd0pvunbiased[ilep] < 5) and
+        ( abs(tree.lep_z0[ilep]*ROOT.TMath.Sin( theta )) < 0.5) 
+        ):
+            return True
+    else: 
+        return False
+
+def m4lstacked(filelist):
+    histnames = ['m4lhist', 'cut1', 'cut2', 'cut3' , 'cut4', 'cut5', 'cut6']
+    datahistlist = []
+    for histname in histnames:
+        datahistlist.append(ROOT.TH1F(histname, "m4l", 100, 0 , 400000))
+ 
+    
     for bestand in filelist:
         f = ROOT.TFile.Open("/data/atlas/users/mvozak/opendata/4lep/Data/{}".format(bestand), 'READ')
         tree = f.Get('mini')
@@ -25,17 +60,15 @@ def m4lstacked(filelist, cut, filename):
         for event in range(number_entries):
             tree.GetEntry(event)
         
-            
-            
+   
             sfos = True
-            istight = True
-            ptcone = False
-            etcone = False
-            etfilter = False
-            ptfilter = False
+            leptonfilter = False
             jetfilter = False
-            ptlist = [25, 15, 10, 7]
-
+            istight = True
+            ptfilter = False
+            ptdowncut = [25000, 15000, 10000, 7000]
+            ptupcut = [1000000000, 60000, 40000, 30000]
+            
             checkpair = [[0,1],[0,2],[0,3]]
             pairs_found = []
             for i,j in checkpair:
@@ -49,30 +82,44 @@ def m4lstacked(filelist, cut, filename):
                 if tree.lep_charge[i] == - tree.lep_charge[j] and tree.lep_type[i] == tree.lep_type[j] \
                 and tree.lep_charge[index0] == - tree.lep_charge[index1] and tree.lep_type[index0] == tree.lep_type[index1]: 
                     pairs_found.append([i,j])
+                    pairs_found.append([index0, index1])
+            
+            endpairs = []
+            endm2l = []
+            
             if len(pairs_found) == 0:
                 sfos = False
 
-            for i in range(3):
+            
+            nGoodLeptons = 0
+            for i in range(4):
                 if tree.lep_isTightID[i] == False: 
                     istight = False
-                if tree.lep_ptcone30[i]/tree.lep_pt[i] > 0.15:
-                    ptcone = True
-                if tree.lep_etcone20 < 0 or abs(tree.lep_etcone20[i]/tree.lep_pt[i]) > 0.15:   
-                    etcone = True
-                if tree.lep_etcone20[i] > 2000:
-                    etfilter = True
-                if tree.lep_pt[i] < ptlist[i]:
+                if tree.lep_pt[i] < ptdowncut[i]:
                     ptfilter = True
-            for i in range(tree.jet_n):
-                if tree.jet_pt[i] < 25000:
-                    jetfilter = True
-                if tree.jet_jvt[i] < 0.59:
-                    jetfilter = True
+                if tree.lep_pt[i] > ptupcut[i]:
+                    ptfilter = True
+                isGoodLep = isGoodLepton(tree, i)
+                isGoodMu  = isGoodMuon(tree, i)
+                isGoodEle = isGoodElectron(tree, i)
+                # print(isGoodLep, isGoodMu, isGoodEle)
+                if( isGoodLep and (isGoodMu or isGoodEle)): 
+                    nGoodLeptons += 1
+                else: 
+                    pass
+
+            if nGoodLeptons != 4 or tree.lep_n > 4:
+                leptonfilter = True
             
-            if cut == True:
-                if istight == False or ptcone == True or etcone == True or ptfilter == True\
-                or jetfilter == True or etfilter == True or sfos == False:
-                    continue
+            # nGoodJets = 0
+            # for ijet in range(0, len(tree.jet_pt) ):
+            #     goodJet = isGoodJet(tree, ijet) 
+
+            #     if not goodJet: continue
+
+            #     nGoodJets += 1
+            # if nGoodJets != len(tree.jet_pt):
+            #     jetfilter = True 
 
             E4l_squared = np.sum(tree.lep_E) ** 2
             px = tree.lep_pt * np.cos(tree.lep_phi)
@@ -83,13 +130,26 @@ def m4lstacked(filelist, cut, filename):
 
             m4l = (E4l_squared - p4l_squared) ** 0.5
 
-            stackedhist.Fill(m4l)
+            datahistlist[0].Fill(m4l)
 
-    # b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(bestand), "RECREATE")
-        
+            if sfos == False:
+                continue
+            datahistlist[1].Fill(m4l)
+
+            if leptonfilter == True:
+                continue
+            datahistlist[2].Fill(m4l)
+
+            if ptfilter == True:
+                continue
+            datahistlist[3].Fill(m4l)
+
     
-    b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lhists/{}'.format(filename), 'recreate')
+    b = ROOT.TFile.Open('/user/ksmits/BachelorProject/m4lrecreate/{}'.format('datastacked.root'), "RECREATE")
     b.cd()
-    stackedhist.Write()
 
-m4lstacked(datafilelist, True, 'datastackedcut.root')
+    for i in range(len(datahistlist)):
+        datahistlist[i].Write()
+    b.Close()
+
+m4lstacked(datafilelist)
